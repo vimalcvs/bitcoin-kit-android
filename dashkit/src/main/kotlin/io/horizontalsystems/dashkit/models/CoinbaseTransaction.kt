@@ -4,7 +4,7 @@ import io.horizontalsystems.bitcoincore.io.BitcoinInputMarkable
 import io.horizontalsystems.bitcoincore.serializers.TransactionSerializer
 
 class CoinbaseTransaction(input: BitcoinInputMarkable) {
-    val transaction = TransactionSerializer.deserialize(input)
+    val transaction = TransactionSerializer.deserialize(input, true)
     val coinbaseTransactionSize: Long
     val version: Int
     val height: Long

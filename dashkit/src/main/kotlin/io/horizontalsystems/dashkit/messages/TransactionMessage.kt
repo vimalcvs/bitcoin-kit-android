@@ -30,7 +30,7 @@ class TransactionMessageParser : IMessageParser {
     }
 
     override fun parseMessage(input: BitcoinInputMarkable): IMessage {
-        var transaction = TransactionSerializer.deserialize(input)
+        var transaction = TransactionSerializer.deserialize(input, true)
 
         val bytes = ByteBuffer.allocate(4).putInt(transaction.header.version).array()
         val txType = bytes[0] + bytes[1]

@@ -13,21 +13,31 @@ import io.horizontalsystems.bitcoincore.transactions.scripts.Sighash
 import io.horizontalsystems.bitcoincore.utils.HashUtils
 
 object TransactionSerializer {
-    fun deserialize(input: BitcoinInputMarkable): FullTransaction {
+    fun deserialize(input: BitcoinInputMarkable, withoutWitness: Boolean = false): FullTransaction {
         val transaction = Transaction()
         val inputs = mutableListOf<TransactionInput>()
         val outputs = mutableListOf<TransactionOutput>()
 
+        // Check for segwit marker without consuming it
         transaction.version = input.readInt()
+        var inputCount: Long
         input.mark()
         val marker = 0xff and input.readUnsignedByte()
-        val inputCount = if (marker == 0) {  // segwit marker: 0x00
-            input.read()  // skip segwit flag: 0x01
-            transaction.segwit = true
-            input.readVarInt()
+
+        if (!withoutWitness && marker == 0) {  // segwit marker: 0x00
+            val flag = input.readUnsignedByte()  // read segwit flag: should be 0x01
+            if (flag == 1) {
+                transaction.segwit = true
+                inputCount = input.readVarInt()
+            } else {
+                // If flag is not 0x01, reset and read as regular transaction
+                input.reset()
+                inputCount = input.readVarInt()
+            }
         } else {
+            // Reset and read as regular transaction
             input.reset()
-            input.readVarInt()
+            inputCount = input.readVarInt()
         }
 
         //  inputs
